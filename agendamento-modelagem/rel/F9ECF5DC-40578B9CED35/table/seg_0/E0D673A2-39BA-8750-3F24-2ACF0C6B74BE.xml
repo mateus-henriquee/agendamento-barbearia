@@ -1,0 +1,80 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="E0D673A2-39BA-8750-3F24-2ACF0C6B74BE" name="HORARIO_FUNCIONAMENTO">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:35:32 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<ordsAlias>table_4</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="barbeiro_id" id="F391E0EC-3780-B7EB-C5E9-E30B9274DE75">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:59:18 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="EDA60DFE-72DA-1182-B167-4FCD5A2DDCA9" referredColumn="ADF94F22-2005-2872-E5FC-9DF7C800C910"/>
+</associations>
+</Column>
+<Column name="data" id="ECAE188D-C067-C369-2610-4B5267B33A76">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:00:52 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="hora_inicio" id="D87846D1-2651-00A9-FF79-3CC34D3CE82D">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:01:11 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT014</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="hora_fim" id="98BAEEE9-D9BB-8EC1-4CED-8C0F6F692510">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:01:27 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT014</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="C3AD32B7-CA12-2B86-FA03-F6516278F632" name="HORARIO_FUNCIONAMENTO_PK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:05:08 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="F391E0EC-3780-B7EB-C5E9-E30B9274DE75"/>
+<colUsage columnID="ECAE188D-C067-C369-2610-4B5267B33A76"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="827E83F9-F3E3-71DD-B190-A9E94038D537" name="HORARIO_FUNCIONAMENTO_BARBEIRO_FK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:59:18 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="F391E0EC-3780-B7EB-C5E9-E30B9274DE75"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

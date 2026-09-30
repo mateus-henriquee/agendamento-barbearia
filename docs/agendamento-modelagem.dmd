@@ -1,0 +1,8 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<OSDM_Design class="oracle.dbtools.crest.model.design.Design" name="agendamento-modelagem" id="DB0C9909-2669-0966-7006-34A927790C14" version="3.5">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:33:46 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<capitalNames>false</capitalNames>
+<designId>DB0C9909-2669-0966-7006-34A927790C14</designId>
+</OSDM_Design>

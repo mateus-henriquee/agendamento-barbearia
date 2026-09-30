@@ -1,0 +1,7 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<LogicalDesign class="oracle.dbtools.crest.model.design.logical.LogicalDesign" name="Logical" id="A3CDD603-AE98-6811-501F-484AA0E71FCE" mainViewID="E6639E46-EB49-CA48-6247-56F1EED331A3">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:33:46 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<shouldBeOpen>false</shouldBeOpen>
+</LogicalDesign>

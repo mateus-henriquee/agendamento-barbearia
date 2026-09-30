@@ -1,0 +1,57 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="FEEFD975-29D1-1985-4931-CC5FE1DDBDE7" name="BARBEIRO">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:34:53 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<ordsAlias>table_1</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="id" id="ADF94F22-2005-2872-E5FC-9DF7C800C910">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:36:28 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="nome" id="08928664-A853-B93B-6579-73DECE9DC6CA">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:37:12 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>50</dataTypeSize>
+<ownDataTypeParameters>50,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="status" id="5DEACAB6-0DB2-08E4-D4B9-B4DF1FD0E44B">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:41:12 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>10</dataTypeSize>
+<ownDataTypeParameters>10,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="9B0CBD5E-F3ED-0E0C-738F-06E8D6789930" name="BARBEIRO_PK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:36:28 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="ADF94F22-2005-2872-E5FC-9DF7C800C910"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

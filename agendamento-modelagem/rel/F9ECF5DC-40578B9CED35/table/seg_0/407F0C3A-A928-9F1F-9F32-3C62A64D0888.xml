@@ -1,0 +1,158 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="407F0C3A-A928-9F1F-9F32-3C62A64D0888" name="AGENDAMENTOS">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:36:05 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<ordsAlias>table_5</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="id" id="998F90AF-2974-C93A-1CF6-2A7BCBF9054D">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:10:43 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="data" id="EC3B615C-48FD-8DFD-FD2F-0298E4CF7C1D">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:13:12 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="hora_inicio" id="6228F4A3-7C10-711C-7D8D-98C95FCBA3A8">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 16:50:25 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT014</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="hora_fim" id="ED277513-6FAE-73D9-E728-197E3D1A071D">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:13:12 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT014</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="status" id="DB38A167-D8E2-EB48-F454-697EEE6A8FF5">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:14:19 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT024</logicalDatatype>
+<dataTypeSize>20</dataTypeSize>
+<ownDataTypeParameters>20,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="criado_em" id="909B7FC2-D2C6-7941-78DC-92706D064CCC">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:14:58 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT015</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="CLIENTES_id" id="4DA8979B-C2F3-3832-D817-9A3F21102A58">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:16:21 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="98334FA8-E39F-171E-F50A-F36CA47DFF5D" referredColumn="3167ACE6-9950-CDC2-D999-7661B9D54B27"/>
+</associations>
+</Column>
+<Column name="BARBEIRO_id" id="792590DB-C8FA-9609-0DCB-41F7D0B4D4EB">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:17:38 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="E5373CCA-A2ED-BA89-699C-188FCF722038" referredColumn="ADF94F22-2005-2872-E5FC-9DF7C800C910"/>
+</associations>
+</Column>
+<Column name="SERVICO_id" id="FC0F4669-D278-E8BE-2C3A-404C12937792">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:19:44 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="B28F1FB5-4312-C621-1D63-045B2FBDFD29" referredColumn="8281AAE1-B19F-2791-148E-EF009F981953"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="BEE3913F-E357-1BC1-FEC1-D540AF96E6D8" name="AGENDAMENTOS_PK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:10:43 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="998F90AF-2974-C93A-1CF6-2A7BCBF9054D"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="ACC9672B-4AAD-A903-8B3F-DA258E0A2199" name="AGENDAMENTOS_CLIENTES_FK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:16:21 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="4DA8979B-C2F3-3832-D817-9A3F21102A58"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="5C74FC4C-83AB-4664-37A5-109562B2CF7B" name="AGENDAMENTOS_BARBEIRO_FK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:17:38 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="792590DB-C8FA-9609-0DCB-41F7D0B4D4EB"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="298B1687-A717-9F7A-FF71-8FC2EEDADCFE" name="AGENDAMENTOS_SERVICO_FK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:19:44 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="FC0F4669-D278-E8BE-2C3A-404C12937792"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

@@ -1,0 +1,16 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<FKIndexAssociation class="oracle.dbtools.crest.model.design.relational.FKIndexAssociation" directorySegmentName="seg_0" id="E5373CCA-A2ED-BA89-699C-188FCF722038" containerWithKeyObject="407F0C3A-A928-9F1F-9F32-3C62A64D0888" localFKIndex="5C74FC4C-83AB-4664-37A5-109562B2CF7B" name="AGENDAMENTOS_BARBEIRO_FK">
+<createdBy>mateu</createdBy>
+<createdTime>2026-09-30 17:17:38 UTC</createdTime>
+<ownerDesignName>agendamento-modelagem</ownerDesignName>
+<referredTableLongName>BARBEIRO</referredTableLongName>
+<deleteRule>NO ACTION</deleteRule>
+<referredTableID>FEEFD975-29D1-1985-4931-CC5FE1DDBDE7</referredTableID>
+<keyObject>9B0CBD5E-F3ED-0E0C-738F-06E8D6789930</keyObject>
+<referredKeyID>9B0CBD5E-F3ED-0E0C-738F-06E8D6789930</referredKeyID>
+<mandatory>true</mandatory>
+<refColNames>id</refColNames>
+<transferable>true</transferable>
+<rely>false</rely>
+<columnDependencyConstraintGenerateInDDL>true</columnDependencyConstraintGenerateInDDL>
+</FKIndexAssociation>
