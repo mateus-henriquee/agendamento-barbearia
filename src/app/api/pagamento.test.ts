@@ -26,6 +26,7 @@ beforeAll(async () => {
   await db.exec(readFileSync("db/migrations/001_inicial.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/002_login_e_preco.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/003_pagamento.sql", "utf8"));
+  await db.exec(readFileSync("db/migrations/004_reserva_com_prazo.sql", "utf8"));
 }, 30_000);
 
 afterAll(async () => {
@@ -67,6 +68,7 @@ describe("POST /api/agendamentos com forma de pagamento", () => {
     const corpo = await r.json();
     expect(corpo.id).toBe(1);
     expect(corpo.pix.valor).toBe(40);
+    expect(new Date(corpo.pix.expiraEm).getTime()).toBeGreaterThan(Date.now());
     expect(corpo.pix.copiaECola).toContain("br.gov.bcb.pix0121barbearia@espiral.com");
     expect(corpo.pix.copiaECola).toContain("540540.00");
     expect(corpo.pix.copiaECola).toContain("0503AG1"); // txid = AG + id do agendamento

@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   if (r.ok) {
     if (pix && r.preco > 0) {
       const copiaECola = gerarPixCopiaECola({ ...pix, valor: r.preco, txid: `AG${r.id}` });
-      return NextResponse.json({ id: r.id, pix: { copiaECola, valor: r.preco } }, { status: 201 });
+      return NextResponse.json({ id: r.id, pix: { copiaECola, valor: r.preco, expiraEm: r.expiraEm } }, { status: 201 });
     }
     return NextResponse.json({ id: r.id }, { status: 201 });
   }

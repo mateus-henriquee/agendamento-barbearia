@@ -1,4 +1,5 @@
 import type { Usuario } from "./auth";
+import { liberarExpirados } from "./agendamentos";
 import type { Db } from "./db";
 
 /**
@@ -21,7 +22,7 @@ export type ItemAgenda = {
   servico: string;
   barbeiro: string;
   barbeiroId: number;
-  status: "CONFIRMADO" | "CANCELADO" | "FALTOU" | "CONCLUIDO";
+  status: "AGUARDANDO_PAGAMENTO" | "CONFIRMADO" | "CANCELADO" | "FALTOU" | "CONCLUIDO";
   preco: number;
   formaPagamento: "PIX" | "NA_BARBEARIA";
   pago: boolean;
@@ -29,6 +30,7 @@ export type ItemAgenda = {
 
 /** Agenda de um dia, em ordem de horário. */
 export async function agendaDoDia(db: Db, escopo: number | null, data: string): Promise<ItemAgenda[]> {
+  await liberarExpirados(db);
   const r = await db.query<{
     id: number;
     inicio: string;
@@ -174,13 +176,16 @@ export async function marcarAtendimento(
  * Só vale para agendamento pago por Pix, ainda não confirmado, dentro do escopo do usuário.
  */
 export async function confirmarPagamento(db: Db, escopo: number | null, id: number): Promise<boolean> {
+  await liberarExpirados(db); // reserva vencida não pode mais ser confirmada
   const r = await db.query(
     `UPDATE agendamentos
-        SET pago_em = now()
+        SET pago_em = now(),
+            expira_em = NULL,
+            status = CASE WHEN status = 'AGUARDANDO_PAGAMENTO' THEN 'CONFIRMADO' ELSE status END
       WHERE id = $1
         AND forma_pagamento = 'PIX'
         AND pago_em IS NULL
-        AND status IN ('CONFIRMADO', 'CONCLUIDO')
+        AND status IN ('AGUARDANDO_PAGAMENTO', 'CONFIRMADO', 'CONCLUIDO')
         AND ($2::int IS NULL OR barbeiro_id = $2::int)
       RETURNING id`,
     [id, escopo],

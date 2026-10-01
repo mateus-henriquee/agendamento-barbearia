@@ -16,7 +16,7 @@ type Confirmacao = {
   data: string;
   hora: string;
   formaPagamento: Forma;
-  pix?: { copiaECola: string; valor: number };
+  pix?: { copiaECola: string; valor: number; expiraEm: string | null };
 };
 
 const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -32,6 +32,22 @@ const selecionado = "border-foreground bg-foreground text-background";
 const normal = "border-white/15 hover:border-white";
 const campo =
   "w-full rounded-lg border border-white/15 bg-transparent px-4 py-3";
+
+/** Tempo restante até `expiraEm`, atualizado a cada segundo. null = sem prazo. */
+function useSegundosRestantes(expiraEm: string | null | undefined): number | null {
+  const [agora, setAgora] = useState(() => Date.now());
+  useEffect(() => {
+    if (!expiraEm) return;
+    const id = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [expiraEm]);
+  if (!expiraEm) return null;
+  return Math.max(0, Math.ceil((new Date(expiraEm).getTime() - agora) / 1000));
+}
+
+function mmss(segundos: number) {
+  return `${String(Math.floor(segundos / 60)).padStart(2, "0")}:${String(segundos % 60).padStart(2, "0")}`;
+}
 
 export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean }) {
   // Listas vindas da API
@@ -60,6 +76,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
   const [hoje] = useState(() => agoraNaBarbearia().data);
   // Número do último pedido de horários. Respostas atrasadas de pedidos antigos são ignoradas.
   const ultimoPedido = useRef(0);
+  const restantes = useSegundosRestantes(confirmacao?.pix?.expiraEm);
 
   useEffect(() => {
     let cancelado = false;
@@ -205,6 +222,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
 
   if (confirmacao) {
     const c = confirmacao;
+    const expirou = restantes === 0;
     const zap = linkWhatsApp(
       site.whatsapp,
       mensagemConfirmacao({
@@ -218,7 +236,9 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
     );
     return (
       <section aria-live="polite">
-        <h2 className="titulo text-3xl">Agendamento confirmado ✓</h2>
+        <h2 className="titulo text-3xl">
+          {expirou ? "Reserva expirada" : c.pix ? "Horário reservado" : "Agendamento confirmado ✓"}
+        </h2>
         <dl className="mt-4 space-y-1">
           <div><dt className="inline opacity-70">Serviço: </dt><dd className="inline">{c.servico}</dd></div>
           <div><dt className="inline opacity-70">Barbeiro: </dt><dd className="inline">{c.barbeiro}</dd></div>
@@ -226,13 +246,24 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
           <div><dt className="inline opacity-70">Horário: </dt><dd className="inline">{c.hora}</dd></div>
           <div>
             <dt className="inline opacity-70">Pagamento: </dt>
-            <dd className="inline">{c.pix ? "Pix" : "após o corte"}</dd>
+            <dd className="inline">{c.pix ? "Pix (aguardando pagamento)" : "após o corte"}</dd>
           </div>
         </dl>
 
-        {c.pix && (
+        {c.pix && expirou && (
+          <p role="alert" className="mt-6 rounded-lg border border-red-500 px-4 py-3 text-red-400">
+            O prazo para pagar acabou e o horário foi liberado. Faça um novo agendamento.
+          </p>
+        )}
+
+        {c.pix && !expirou && (
           <div className="mt-6 rounded-xl border border-white/15 p-5">
             <p className="font-semibold">Pague {moeda.format(c.pix.valor)} com Pix</p>
+            {restantes !== null && (
+              <p className="mt-1 text-sm text-amber-300">
+                Seu horário fica reservado por <span className="font-semibold tabular-nums">{mmss(restantes)}</span>.
+              </p>
+            )}
             <p className="mt-1 text-sm text-aco">Aponte a câmera do app do banco ou use o código copia e cola.</p>
             <div className="mt-4 inline-block rounded-lg bg-white p-3">
               <QRCodeSVG value={c.pix.copiaECola} size={176} title="QR code do Pix" />
@@ -253,7 +284,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
               {copiado ? "Copiado ✓" : "Copiar código Pix"}
             </button>
             <p className="mt-3 text-sm text-aco">
-              O barbeiro confirma o pagamento quando o Pix cair. Seu horário já está reservado.
+              O agendamento é confirmado quando o barbeiro receber o Pix. Sem pagamento no prazo, o horário é liberado.
             </p>
           </div>
         )}
@@ -264,14 +295,16 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
           </p>
         )}
 
-        <a
-          href={zap}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="brilho mt-6 block rounded-lg bg-[#25d366] px-4 py-3 text-center font-semibold text-black"
-        >
-          Enviar confirmação no WhatsApp
-        </a>
+        {!expirou && (
+          <a
+            href={zap}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="brilho mt-6 block rounded-lg bg-[#25d366] px-4 py-3 text-center font-semibold text-black"
+          >
+            Enviar confirmação no WhatsApp
+          </a>
+        )}
         <button onClick={recomecar} className="mt-3 w-full rounded-lg border border-white/20 px-4 py-3">
           Fazer outro agendamento
         </button>

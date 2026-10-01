@@ -13,6 +13,7 @@ beforeAll(async () => {
   await db.exec(readFileSync("db/migrations/001_inicial.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/002_login_e_preco.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/003_pagamento.sql", "utf8"));
+  await db.exec(readFileSync("db/migrations/004_reserva_com_prazo.sql", "utf8"));
 }, 30_000);
 
 afterAll(async () => {
@@ -70,8 +71,9 @@ describe("concluir atendimento", () => {
   it("Pix: concluir NÃO registra pagamento (só quando o barbeiro confirma o Pix)", async () => {
     const r = await marcar("10:00", "PIX");
     if (!r.ok) throw new Error();
+    await db.query("UPDATE agendamentos SET status = 'CONFIRMADO' WHERE id = $1", [r.id]); // como se o prazo não valesse
     await marcarAtendimento(db, null, r.id, "CONCLUIDO", DIA);
-    expect((await linha(r.id)).pago_em).toBeNull();
+    expect(await linha(r.id)).toMatchObject({ status: "CONCLUIDO", pago_em: null });
   });
 
   it("falta não registra pagamento", async () => {

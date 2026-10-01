@@ -38,12 +38,14 @@ function rotuloMes(mes: string) {
 }
 
 const estiloStatus: Record<ItemAgenda["status"], string> = {
+  AGUARDANDO_PAGAMENTO: "bg-amber-500/15 text-amber-300",
   CONFIRMADO: "bg-poste-azul/30 text-blue-200",
   CONCLUIDO: "bg-green-500/15 text-green-300",
   FALTOU: "bg-amber-500/15 text-amber-300",
   CANCELADO: "bg-white/10 text-aco",
 };
 const nomeStatus: Record<ItemAgenda["status"], string> = {
+  AGUARDANDO_PAGAMENTO: "Aguardando Pix",
   CONFIRMADO: "Confirmado",
   CONCLUIDO: "Concluído",
   FALTOU: "Faltou",
@@ -274,7 +276,7 @@ export default function Painel({ usuario }: Props) {
                         <span className={`rounded-full px-3 py-1 text-xs font-medium ${estiloStatus[i.status]}`}>
                           {nomeStatus[i.status]}
                         </span>
-                        {i.status !== "CANCELADO" && i.status !== "FALTOU" && (
+                        {i.status !== "CANCELADO" && i.status !== "FALTOU" && i.status !== "AGUARDANDO_PAGAMENTO" && (
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-medium ${
                               i.pago ? "bg-green-500/15 text-green-300" : "bg-amber-500/15 text-amber-300"
@@ -286,7 +288,7 @@ export default function Painel({ usuario }: Props) {
                       </div>
                     </div>
 
-                    {i.formaPagamento === "PIX" && !i.pago && (i.status === "CONFIRMADO" || i.status === "CONCLUIDO") && (
+                    {i.formaPagamento === "PIX" && !i.pago && i.status !== "CANCELADO" && i.status !== "FALTOU" && (
                       <button
                         onClick={() => confirmarPix(i.id)}
                         disabled={agindo === i.id}

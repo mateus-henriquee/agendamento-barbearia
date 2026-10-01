@@ -16,8 +16,24 @@ export type NovoAgendamento = {
 
 export type FormaPagamento = "PIX" | "NA_BARBEARIA";
 
+/** Quanto tempo o cliente tem para pagar o Pix antes de o horário ser liberado. */
+export const PRAZO_PIX_MIN = 20;
+
+/**
+ * Cancela as reservas que não foram pagas a tempo, liberando o horário.
+ * Roda antes de consultar horários e antes de reservar, então não precisa de agendador externo.
+ */
+export async function liberarExpirados(db: Db): Promise<number> {
+  const r = await db.query(
+    `UPDATE agendamentos SET status = 'CANCELADO'
+      WHERE status = 'AGUARDANDO_PAGAMENTO' AND expira_em <= now()
+      RETURNING id`,
+  );
+  return r.rows.length;
+}
+
 export type ResultadoAgendar =
-  | { ok: true; id: number; preco: number }
+  | { ok: true; id: number; preco: number; expiraEm: string | null }
   | {
       ok: false;
       motivo:
@@ -33,6 +49,7 @@ export type ResultadoAgendar =
  * Se outro agendamento ocupar o horário, o banco recusa (regra anti-conflito).
  */
 export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgendar> {
+  await liberarExpirados(db); // horário de reserva vencida volta a ficar livre
   const servico = await db.query<{ duracao_min: number }>(
     "SELECT duracao_min FROM servicos WHERE id = $1",
     [n.servicoId],
@@ -41,13 +58,19 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
   const duracao = servico.rows[0].duracao_min;
 
   try {
-    const r = await db.query<{ id: number; preco: number }>(
+    const r = await db.query<{ id: number; preco: number; expira_em: string | null }>(
       `INSERT INTO agendamentos
-         (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim, preco_cobrado, forma_pagamento)
+         (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim, preco_cobrado, forma_pagamento,
+          status, expira_em)
        SELECT $1::int, $2::int, $3::int, $4::date, $5::time,
               $5::time + make_interval(mins => $6::int),
               (SELECT preco FROM servicos WHERE id = $2::int),
-              $7::text
+              $7::text,
+              -- Pix de serviço com preço: o horário fica reservado até o prazo. Senão, já nasce confirmado.
+              CASE WHEN $7::text = 'PIX' AND (SELECT preco FROM servicos WHERE id = $2::int) > 0
+                   THEN 'AGUARDANDO_PAGAMENTO' ELSE 'CONFIRMADO' END,
+              CASE WHEN $7::text = 'PIX' AND (SELECT preco FROM servicos WHERE id = $2::int) > 0
+                   THEN now() + make_interval(mins => $8::int) END
        FROM horarios_funcionamento h
        JOIN barbeiros b ON b.id = h.barbeiro_id
        WHERE h.barbeiro_id = $1::int
@@ -56,11 +79,11 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
          AND $5::time >= h.hora_inicio
          AND $5::time + make_interval(mins => $6::int) <= h.hora_fim
          AND $5::time + make_interval(mins => $6::int) > $5::time
-       RETURNING id, preco_cobrado::float8 AS preco`,
-      [n.barbeiroId, n.servicoId, n.clienteId, n.data, n.horaInicio, duracao, n.formaPagamento ?? "NA_BARBEARIA"],
+       RETURNING id, preco_cobrado::float8 AS preco, expira_em::text AS expira_em`,
+      [n.barbeiroId, n.servicoId, n.clienteId, n.data, n.horaInicio, duracao, n.formaPagamento ?? "NA_BARBEARIA", PRAZO_PIX_MIN],
     );
     if (r.rows.length === 0) return { ok: false, motivo: "FORA_DO_EXPEDIENTE" };
-    return { ok: true, id: r.rows[0].id, preco: r.rows[0].preco };
+    return { ok: true, id: r.rows[0].id, preco: r.rows[0].preco, expiraEm: r.rows[0].expira_em };
   } catch (erro) {
     const codigo = (erro as { code?: string }).code;
     if (codigo === VIOLACAO_EXCLUSAO) return { ok: false, motivo: "CONFLITO" };
@@ -73,7 +96,7 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
 export async function cancelar(db: Db, id: number): Promise<boolean> {
   const r = await db.query(
     `UPDATE agendamentos SET status = 'CANCELADO'
-     WHERE id = $1 AND status = 'CONFIRMADO'
+     WHERE id = $1 AND status IN ('CONFIRMADO', 'AGUARDANDO_PAGAMENTO')
      RETURNING id`,
     [id],
   );
@@ -90,6 +113,7 @@ export async function horariosDisponiveis(
     [p.servicoId],
   );
   if (servico.rows.length === 0) return [];
+  await liberarExpirados(db);
 
   const expediente = await db.query<{ inicio: string; fim: string }>(
     `SELECT to_char(h.hora_inicio, 'HH24:MI') AS inicio,
@@ -106,7 +130,7 @@ export async function horariosDisponiveis(
             to_char(hora_fim,    'HH24:MI') AS fim
      FROM agendamentos
      WHERE barbeiro_id = $1 AND data = $2::date
-       AND status IN ('CONFIRMADO', 'CONCLUIDO')`,
+       AND status IN ('AGUARDANDO_PAGAMENTO', 'CONFIRMADO', 'CONCLUIDO')`,
     [p.barbeiroId, p.data],
   );
 
