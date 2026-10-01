@@ -17,9 +17,9 @@ function formatarData(iso: string) {
 
 const cartao = "rounded-lg border px-4 py-3 text-left transition";
 const selecionado = "border-foreground bg-foreground text-background";
-const normal = "border-black/15 hover:border-foreground dark:border-white/20";
+const normal = "border-white/15 hover:border-white";
 const campo =
-  "w-full rounded-lg border border-black/15 bg-transparent px-4 py-3 dark:border-white/20";
+  "w-full rounded-lg border border-white/15 bg-transparent px-4 py-3";
 
 export default function Agendamento() {
   const [servicos, setServicos] = useState<Servico[]>([]);
@@ -171,7 +171,7 @@ export default function Agendamento() {
 
   if (confirmacao) {
     return (
-      <section className="rounded-xl border border-black/15 p-6 dark:border-white/20" aria-live="polite">
+      <section className="rounded-xl border border-white/15 p-6" aria-live="polite">
         <h2 className="text-xl font-semibold">Agendamento confirmado ✓</h2>
         <dl className="mt-4 space-y-1">
           <div><dt className="inline opacity-70">Serviço: </dt><dd className="inline">{confirmacao.servico}</dd></div>
@@ -299,7 +299,7 @@ export default function Agendamento() {
       )}
 
       {erro && (
-        <p role="alert" className="rounded-lg border border-red-500 px-4 py-3 text-red-600 dark:text-red-400">
+        <p role="alert" className="rounded-lg border border-red-500 px-4 py-3 text-red-400">
           {erro}
         </p>
       )}

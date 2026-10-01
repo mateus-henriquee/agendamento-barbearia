@@ -1,26 +1,147 @@
 @import "tailwindcss";
 
+/* Desliga o "dark:" automático do sistema. Cada seção define sua cor. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #151515;
+  --foreground: #f2f2f0;
+  --tinta: #151515;
+  --grafite: #1a1a19;
+  --cartao: #242424;
+  --poste-vermelho: #c8102e;
+  --poste-azul: #1f4e9c;
+  --aco: #a1a19c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-tinta: var(--tinta);
+  --color-grafite: var(--grafite);
+  --color-cartao: var(--cartao);
+  --color-poste: var(--poste-vermelho);
+  --color-poste-azul: var(--poste-azul);
+  --color-aco: var(--aco);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark; /* calendário e campos nativos em tema escuro */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Título condensado, estilo cartaz de barbearia (eixo "wdth" da Archivo) */
+.titulo {
+  font-stretch: 68%;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Listras do poste de barbeiro */
+.listras {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--poste-vermelho) 0 10px,
+    #ffffff 10px 20px,
+    var(--poste-azul) 20px 30px,
+    #ffffff 30px 40px
+  );
+  background-size: 56.57px 56.57px;
+}
+
+.listras-animadas {
+  animation: poste 1.2s linear infinite;
+}
+
+@keyframes poste {
+  to {
+    background-position: 56.57px 0;
+  }
+}
+
+.listras-suave {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0 14px,
+    transparent 14px 28px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .listras-animadas {
+    animation: none;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--poste-vermelho);
+  outline-offset: 3px;
+}
+/* Scrollbar: Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--poste-vermelho) var(--tinta);
+}
+
+/* Scrollbar: Chrome, Edge, Safari (thumb com listras de poste) */
+@supports selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--tinta);
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid var(--tinta);
+    border-radius: 999px;
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--poste-vermelho) 0 8px,
+      #ffffff 8px 16px,
+      var(--poste-azul) 16px 24px,
+      #ffffff 24px 32px
+    );
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    filter: brightness(1.15);
+  }
+}
+/* Hover dos botões: sombra vermelha + leve elevação */
+.brilho {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.brilho:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(200, 16, 46, 0.45);
+  transform: translateY(-2px);
+}
+.brilho:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(200, 16, 46, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brilho:hover:not(:disabled) {
+    transform: none;
+  }
 }
