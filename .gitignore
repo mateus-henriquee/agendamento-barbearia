@@ -43,3 +43,5 @@ next-env.d.ts
 **/*.local
 **/*.git
 **/*.DS_Store
+etapa*/
+*.tar.gz
