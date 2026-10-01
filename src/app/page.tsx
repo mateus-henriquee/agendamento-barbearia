@@ -47,6 +47,9 @@ export default function Home() {
         <section id="sobre" className="bg-grafite py-24">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 md:grid-cols-2">
             <div>
+            <Foto src="/img/sobre.jpg" alt="Interior da barbearia" className="aspect-[5/4] w-full rounded-2xl" />
+            </div>
+            <div>
               <h2 className="titulo text-5xl sm:text-6xl">Sobre nós</h2>
               <p className="mt-6 max-w-md text-xl text-aco">
                 Uma barbearia de bairro com agenda de verdade. Cada cliente tem horário marcado, tempo para conversar e saída com o corte que pediu.
@@ -54,8 +57,7 @@ export default function Home() {
               <p className="mt-4 max-w-md text-aco">
                 Desde 2015 cuidamos de cabelo e barba, com atendimento masculino e feminino.
               </p>
-            </div>
-            <Foto src="/img/sobre.jpg" alt="Interior da barbearia" className="aspect-[5/4] w-full rounded-2xl" />
+              </div>
           </div>
         </section>
 

@@ -29,6 +29,7 @@ beforeAll(async () => {
   await db.exec(readFileSync("db/migrations/002_login_e_preco.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/003_pagamento.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/004_reserva_com_prazo.sql", "utf8"));
+  await db.exec(readFileSync("db/migrations/005_limite_login.sql", "utf8"));
 }, 30_000);
 
 afterAll(async () => {
@@ -37,11 +38,21 @@ afterAll(async () => {
 
 beforeEach(async () => {
   ctx.jar.clear();
-  await db.exec("TRUNCATE usuarios, sessoes, barbeiros RESTART IDENTITY CASCADE");
+  await db.exec("TRUNCATE usuarios, sessoes, tentativas_login, barbeiros RESTART IDENTITY CASCADE");
   await criarUsuario(db, { nome: "Dono", email: "dono@x.com", senha: "senha-forte-1", papel: "DONO" });
 });
 
-const entrar = (corpo: unknown) => login(new Request("http://x/api/login", { method: "POST", body: JSON.stringify(corpo) }));
+const entrar = (corpo: unknown, ip?: string) =>
+  login(
+    new Request("http://x/api/login", {
+      method: "POST",
+      body: JSON.stringify(corpo),
+      headers: ip ? { "x-forwarded-for": ip } : {},
+    }),
+  );
+const errar = async (email: string, vezes: number, ip?: string) => {
+  for (let i = 0; i < vezes; i++) await entrar({ email, senha: "senha-errada-1" }, ip);
+};
 
 describe("POST /api/login", () => {
   it("200 e cookie httpOnly com credenciais corretas", async () => {
@@ -76,5 +87,52 @@ describe("POST /api/logout", () => {
     expect(ctx.jar.has("sessao")).toBe(false);
     const s = await db.query("SELECT 1 FROM sessoes");
     expect(s.rows).toHaveLength(0);
+  });
+});
+
+describe("proteção contra tentativas em massa", () => {
+  it("5 erros bloqueiam o e-mail: a 6ª tentativa recebe 429, até com a senha certa", async () => {
+    await errar("dono@x.com", 5);
+    const r = await entrar({ email: "dono@x.com", senha: "senha-forte-1" });
+    expect(r.status).toBe(429);
+    expect((await r.json()).erro).toMatch(/Muitas tentativas/);
+    expect(Number(r.headers.get("Retry-After"))).toBeGreaterThan(0);
+    expect(ctx.jar.get("sessao")).toBeUndefined();
+  });
+
+  it("4 erros ainda deixam entrar, e o login certo zera o contador", async () => {
+    await errar("dono@x.com", 4);
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" })).status).toBe(200);
+    await errar("dono@x.com", 4);
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" })).status).toBe(200);
+  });
+
+  it("e-mail inexistente também é bloqueado (não revela quem tem conta)", async () => {
+    await errar("ninguem@x.com", 5);
+    expect((await entrar({ email: "ninguem@x.com", senha: "qualquer-uma" })).status).toBe(429);
+  });
+
+  it("bloqueio de um e-mail não afeta os outros", async () => {
+    await criarUsuario(db, { nome: "Outro", email: "outro@x.com", senha: "senha-forte-2", papel: "DONO" });
+    await errar("dono@x.com", 5);
+    expect((await entrar({ email: "outro@x.com", senha: "senha-forte-2" })).status).toBe(200);
+  });
+
+  it("maiúsculas no e-mail não burlam o bloqueio", async () => {
+    await errar("DONO@x.com", 3);
+    await errar("Dono@X.com", 2);
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" })).status).toBe(429);
+  });
+
+  it("20 erros do mesmo IP bloqueiam esse IP, mesmo trocando de e-mail", async () => {
+    for (let i = 0; i < 20; i++) await entrar({ email: `x${i}@x.com`, senha: "senha-errada-1" }, "9.9.9.9");
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" }, "9.9.9.9")).status).toBe(429);
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" }, "8.8.8.8")).status).toBe(200);
+  });
+
+  it("falhas antigas (fora da janela) não contam", async () => {
+    await errar("dono@x.com", 5);
+    await db.exec("UPDATE tentativas_login SET criado_em = now() - interval '16 minutes'");
+    expect((await entrar({ email: "dono@x.com", senha: "senha-forte-1" })).status).toBe(200);
   });
 });
