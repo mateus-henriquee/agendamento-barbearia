@@ -27,6 +27,7 @@ beforeAll(async () => {
   ctx.db = db;
   await db.exec(readFileSync("db/migrations/001_inicial.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/002_login_e_preco.sql", "utf8"));
+  await db.exec(readFileSync("db/migrations/003_pagamento.sql", "utf8"));
 }, 30_000);
 
 afterAll(async () => {

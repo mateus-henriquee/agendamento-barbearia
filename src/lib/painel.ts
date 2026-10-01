@@ -23,6 +23,8 @@ export type ItemAgenda = {
   barbeiroId: number;
   status: "CONFIRMADO" | "CANCELADO" | "FALTOU" | "CONCLUIDO";
   preco: number;
+  formaPagamento: "PIX" | "NA_BARBEARIA";
+  pago: boolean;
 };
 
 /** Agenda de um dia, em ordem de horário. */
@@ -38,6 +40,8 @@ export async function agendaDoDia(db: Db, escopo: number | null, data: string): 
     barbeiro_id: number;
     status: ItemAgenda["status"];
     preco: number;
+    forma_pagamento: ItemAgenda["formaPagamento"];
+    pago: boolean;
   }>(
     `SELECT a.id,
             to_char(a.hora_inicio, 'HH24:MI') AS inicio,
@@ -46,7 +50,9 @@ export async function agendaDoDia(db: Db, escopo: number | null, data: string): 
             s.nome AS servico,
             b.nome AS barbeiro, b.id AS barbeiro_id,
             a.status,
-            a.preco_cobrado::float8 AS preco
+            a.preco_cobrado::float8 AS preco,
+            a.forma_pagamento,
+            (a.pago_em IS NOT NULL) AS pago
        FROM agendamentos a
        JOIN clientes  c ON c.id = a.cliente_id
        JOIN servicos  s ON s.id = a.servico_id
@@ -56,7 +62,11 @@ export async function agendaDoDia(db: Db, escopo: number | null, data: string): 
       ORDER BY a.hora_inicio, b.nome`,
     [data, escopo],
   );
-  return r.rows.map((l) => ({ ...l, barbeiroId: l.barbeiro_id }));
+  return r.rows.map(({ barbeiro_id, forma_pagamento, ...l }) => ({
+    ...l,
+    barbeiroId: barbeiro_id,
+    formaPagamento: forma_pagamento,
+  }));
 }
 
 export type ResumoMes = {
@@ -145,13 +155,35 @@ export async function marcarAtendimento(
 ): Promise<boolean> {
   const r = await db.query(
     `UPDATE agendamentos
-        SET status = $2
+        SET status = $2::text,
+            -- pagar na barbearia: concluir o atendimento já registra o pagamento
+            pago_em = CASE WHEN $2::text = 'CONCLUIDO' AND forma_pagamento = 'NA_BARBEARIA'
+                           THEN COALESCE(pago_em, now()) ELSE pago_em END
       WHERE id = $1
         AND status = 'CONFIRMADO'
         AND data <= $3::date
         AND ($4::int IS NULL OR barbeiro_id = $4::int)
       RETURNING id`,
     [id, novoStatus, hoje, escopo],
+  );
+  return r.rows.length > 0;
+}
+
+/**
+ * O barbeiro confirma que o Pix caiu na conta.
+ * Só vale para agendamento pago por Pix, ainda não confirmado, dentro do escopo do usuário.
+ */
+export async function confirmarPagamento(db: Db, escopo: number | null, id: number): Promise<boolean> {
+  const r = await db.query(
+    `UPDATE agendamentos
+        SET pago_em = now()
+      WHERE id = $1
+        AND forma_pagamento = 'PIX'
+        AND pago_em IS NULL
+        AND status IN ('CONFIRMADO', 'CONCLUIDO')
+        AND ($2::int IS NULL OR barbeiro_id = $2::int)
+      RETURNING id`,
+    [id, escopo],
   );
   return r.rows.length > 0;
 }

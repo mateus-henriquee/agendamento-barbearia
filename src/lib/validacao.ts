@@ -27,6 +27,7 @@ export const novoAgendamento = z.object({
   clienteId: id,
   data,
   horaInicio: hora,
+  formaPagamento: z.enum(["PIX", "NA_BARBEARIA"]).default("NA_BARBEARIA"),
 });
 
 /** Deixa só os dígitos e acrescenta o código do país (55) se faltar. */

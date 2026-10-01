@@ -3,6 +3,7 @@ import { z } from "zod";
 import { agendar } from "@/lib/agendamentos";
 import { agoraNaBarbearia } from "@/lib/agora";
 import { getDb } from "@/lib/db";
+import { gerarPixCopiaECola, pixConfigurado } from "@/lib/pix";
 import { novoAgendamento } from "@/lib/validacao";
 
 const STATUS = {
@@ -33,7 +34,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ erro: "Horário no passado" }, { status: 400 });
   }
 
+  // Pix só pode ser escolhido se a barbearia configurou a chave. Conferimos ANTES de reservar o horário.
+  const pix = parsed.data.formaPagamento === "PIX" ? pixConfigurado() : null;
+  if (parsed.data.formaPagamento === "PIX" && !pix) {
+    return NextResponse.json(
+      { erro: "Pix indisponível no momento. Escolha pagar após o corte.", motivo: "PIX_INDISPONIVEL" },
+      { status: 422 },
+    );
+  }
+
   const r = await agendar(getDb(), parsed.data);
-  if (r.ok) return NextResponse.json({ id: r.id }, { status: 201 });
+  if (r.ok) {
+    if (pix && r.preco > 0) {
+      const copiaECola = gerarPixCopiaECola({ ...pix, valor: r.preco, txid: `AG${r.id}` });
+      return NextResponse.json({ id: r.id, pix: { copiaECola, valor: r.preco } }, { status: 201 });
+    }
+    return NextResponse.json({ id: r.id }, { status: 201 });
+  }
   return NextResponse.json({ erro: MENSAGEM[r.motivo], motivo: r.motivo }, { status: STATUS[r.motivo] });
 }

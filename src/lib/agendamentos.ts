@@ -11,10 +11,13 @@ export type NovoAgendamento = {
   clienteId: number;
   data: string; // "2026-10-05"
   horaInicio: string; // "14:30"
+  formaPagamento?: FormaPagamento; // padrão: pagar na barbearia
 };
 
+export type FormaPagamento = "PIX" | "NA_BARBEARIA";
+
 export type ResultadoAgendar =
-  | { ok: true; id: number }
+  | { ok: true; id: number; preco: number }
   | {
       ok: false;
       motivo:
@@ -38,12 +41,13 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
   const duracao = servico.rows[0].duracao_min;
 
   try {
-    const r = await db.query<{ id: number }>(
+    const r = await db.query<{ id: number; preco: number }>(
       `INSERT INTO agendamentos
-        (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim, preco_cobrado)
+         (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim, preco_cobrado, forma_pagamento)
        SELECT $1::int, $2::int, $3::int, $4::date, $5::time,
               $5::time + make_interval(mins => $6::int),
-              (SELECT preco FROM servicos WHERE id = $2::int)
+              (SELECT preco FROM servicos WHERE id = $2::int),
+              $7::text
        FROM horarios_funcionamento h
        JOIN barbeiros b ON b.id = h.barbeiro_id
        WHERE h.barbeiro_id = $1::int
@@ -52,11 +56,11 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
          AND $5::time >= h.hora_inicio
          AND $5::time + make_interval(mins => $6::int) <= h.hora_fim
          AND $5::time + make_interval(mins => $6::int) > $5::time
-       RETURNING id`,
-      [n.barbeiroId, n.servicoId, n.clienteId, n.data, n.horaInicio, duracao],
+       RETURNING id, preco_cobrado::float8 AS preco`,
+      [n.barbeiroId, n.servicoId, n.clienteId, n.data, n.horaInicio, duracao, n.formaPagamento ?? "NA_BARBEARIA"],
     );
     if (r.rows.length === 0) return { ok: false, motivo: "FORA_DO_EXPEDIENTE" };
-    return { ok: true, id: r.rows[0].id };
+    return { ok: true, id: r.rows[0].id, preco: r.rows[0].preco };
   } catch (erro) {
     const codigo = (erro as { code?: string }).code;
     if (codigo === VIOLACAO_EXCLUSAO) return { ok: false, motivo: "CONFLITO" };
