@@ -50,3 +50,20 @@ export const credenciais = z.object({
   email: z.string().trim().min(3).max(200),
   senha: z.string().min(1).max(200),
 });
+
+export const consultaAgenda = z.object({
+  data: data.optional(),
+  barbeiroId: idDaUrl.optional(),
+});
+
+export const consultaResumo = z.object({
+  mes: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use o formato AAAA-MM")
+    .optional(),
+  barbeiroId: idDaUrl.optional(),
+});
+
+export const novoStatus = z.object({
+  status: z.enum(["CONCLUIDO", "FALTOU"]),
+});
