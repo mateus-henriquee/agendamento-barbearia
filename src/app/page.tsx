@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Redes from "@/components/redes";
 import BotaoWhatsApp from "@/components/whatsapp";
 import { equipe, site } from "@/lib/site";
+import Link from "next/link";
 
 const mapa = `https://www.google.com/maps?q=${encodeURIComponent(site.endereco)}&output=embed`;
 const rotaMapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.endereco)}`;
@@ -147,7 +148,10 @@ export default function Home() {
           </div>
           <div className="mt-14 flex flex-col justify-between gap-2 border-t border-white/10 pt-6 text-sm text-white/40 sm:flex-row">
             <p>© {new Date().getFullYear()} {site.nome}. Todos os direitos reservados.</p>
+            <p className="flex gap-6">
+            <Link href="/login" className="hover:text-white">Área do colaborador</Link>
             <a href="#topo" className="hover:text-white">Voltar ao topo</a>
+            </p>
           </div>
         </div>
       </footer>
