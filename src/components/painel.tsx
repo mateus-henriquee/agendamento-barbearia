@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { agoraNaBarbearia } from "@/lib/agora";
-import { linkWhatsApp, mensagemLembrete } from "@/lib/mensagens";
+import type { ItemFila } from "@/lib/fila";
+import { linkWhatsApp, mensagemLembrete, mensagemVaga } from "@/lib/mensagens";
 import type { ItemAgenda, ResumoMes } from "@/lib/painel";
 import { site } from "@/lib/site";
 
@@ -60,7 +61,7 @@ export default function Painel({ usuario }: Props) {
   const [data, setData] = useState(hoje);
   const [barbeiroId, setBarbeiroId] = useState("");
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
-  const [dados, setDados] = useState<{ chave: string; agenda: ItemAgenda[]; resumo: ResumoMes } | null>(null);
+  const [dados, setDados] = useState<{ chave: string; agenda: ItemAgenda[]; resumo: ResumoMes; fila: ItemFila[] } | null>(null);
   const [chaveComFalha, setChaveComFalha] = useState<string | null>(null);
   const [erroAcao, setErroAcao] = useState("");
   const [agindo, setAgindo] = useState<number | null>(null);
@@ -75,14 +76,15 @@ export default function Painel({ usuario }: Props) {
   const buscar = useCallback(async (d: string, b: string) => {
     try {
       const filtro = b ? `&barbeiroId=${b}` : "";
-      const [ra, rr] = await Promise.all([
+      const [ra, rr, rf] = await Promise.all([
         fetch(`/api/painel/agenda?data=${d}${filtro}`),
         fetch(`/api/painel/resumo?mes=${d.slice(0, 7)}${filtro}`),
+        fetch(`/api/painel/fila?data=${d}${filtro}`),
       ]);
-      if (ra.status === 401 || rr.status === 401) return "SEM_SESSAO" as const;
-      if (!ra.ok || !rr.ok) return null;
-      const [ja, jr] = await Promise.all([ra.json(), rr.json()]);
-      return { agenda: ja.agenda as ItemAgenda[], resumo: jr as ResumoMes };
+      if (ra.status === 401 || rr.status === 401 || rf.status === 401) return "SEM_SESSAO" as const;
+      if (!ra.ok || !rr.ok || !rf.ok) return null;
+      const [ja, jr, jf] = await Promise.all([ra.json(), rr.json(), rf.json()]);
+      return { agenda: ja.agenda as ItemAgenda[], resumo: jr as ResumoMes, fila: jf.fila as ItemFila[] };
     } catch {
       return null;
     }
@@ -159,6 +161,29 @@ export default function Painel({ usuario }: Props) {
     }
   }
 
+  async function atualizarFila(id: number, status: "AVISADO" | "REMOVIDO") {
+    setAgindo(id);
+    setErroAcao("");
+    try {
+      const r = await fetch(`/api/painel/fila/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (r.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (!r.ok) setErroAcao("Não foi possível atualizar a fila.");
+      const novo = await buscar(data, barbeiroId);
+      if (novo && novo !== "SEM_SESSAO") setDados({ chave, ...novo });
+    } catch {
+      setErroAcao("Falha de conexão. Tente novamente.");
+    } finally {
+      setAgindo(null);
+    }
+  }
+
   async function sair() {
     await fetch("/api/logout", { method: "POST" }).catch(() => {});
     router.replace("/login");
@@ -167,6 +192,7 @@ export default function Painel({ usuario }: Props) {
 
   const agenda = dados?.agenda ?? null;
   const resumo = dados?.resumo ?? null;
+  const fila = dados?.fila ?? [];
   const podeMarcar = data <= hoje; // dia futuro não pode ser concluído
 
   return (
@@ -324,6 +350,63 @@ export default function Painel({ usuario }: Props) {
 
           {/* RESUMO DO MÊS */}
           <aside aria-label="Resumo do mês" className="space-y-4">
+            {fila.length > 0 && (
+              <section aria-label="Fila de espera" className="space-y-3">
+                <h2 className="text-lg font-semibold">Fila de espera ({fila.length})</h2>
+                <ul className="space-y-3">
+                  {fila.map((f) => (
+                    <li key={f.id} className="rounded-xl bg-cartao p-4 ring-1 ring-white/10">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold">
+                            {f.posicao}º · {f.cliente}
+                          </p>
+                          <p className="text-sm text-aco">
+                            {f.servico}
+                            {dono && !barbeiroId && <> · {f.barbeiro}</>}
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            f.status === "AVISADO"
+                              ? "bg-poste-azul/30 text-blue-200"
+                              : f.vagaLivre
+                                ? "bg-green-500/15 text-green-300"
+                                : "bg-white/10 text-aco"
+                          }`}
+                        >
+                          {f.status === "AVISADO" ? "Avisado" : f.vagaLivre ? "Vaga livre" : "Aguardando"}
+                        </span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {f.vagaLivre && f.status === "AGUARDANDO" && (
+                          <a
+                            href={linkWhatsApp(
+                              f.telefone,
+                              mensagemVaga({ cliente: f.cliente, barbeiro: f.barbeiro, data, barbearia: site.nome }, hoje),
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => atualizarFila(f.id, "AVISADO")}
+                            className="brilho rounded-lg bg-[#25d366] px-3 py-2 text-sm font-semibold text-black"
+                          >
+                            Avisar da vaga
+                          </a>
+                        )}
+                        <button
+                          onClick={() => atualizarFila(f.id, "REMOVIDO")}
+                          disabled={agindo === f.id}
+                          className="rounded-lg border border-white/20 px-3 py-2 text-sm disabled:opacity-40"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             <h2 className="text-lg font-semibold first-letter:uppercase">{resumo ? rotuloMes(resumo.mes) : "Resumo do mês"}</h2>
 
             <div className="grid grid-cols-2 gap-3">

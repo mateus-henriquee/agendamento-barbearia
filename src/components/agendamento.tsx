@@ -67,6 +67,8 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
   const [telefone, setTelefone] = useState("");
   const [forma, setForma] = useState<Forma>("NA_BARBEARIA");
   const [copiado, setCopiado] = useState(false);
+  const [entrandoFila, setEntrandoFila] = useState(false);
+  const [filaMsg, setFilaMsg] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
 
   // Estado do envio
   const [enviando, setEnviando] = useState(false);
@@ -103,6 +105,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
   async function buscarHorarios(s: number | null, b: number | null, d: string) {
     setHora("");
     setErro("");
+    setFilaMsg(null);
     if (!s || !b || !d) {
       setHorarios(null);
       return;
@@ -196,6 +199,36 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
     }
   }
 
+  async function entrarNaFila() {
+    if (!servicoId || !barbeiroId || !data) return;
+    setEntrandoFila(true);
+    setFilaMsg(null);
+    try {
+      const r = await fetch("/api/fila", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ barbeiroId, servicoId, data, nome, telefone }),
+      });
+      const corpo = await r.json();
+      if (r.ok) {
+        setFilaMsg({
+          tipo: "ok",
+          texto: `Pronto! Você é o ${corpo.posicao}º da fila. Se abrir uma vaga, a barbearia avisa pelo WhatsApp.`,
+        });
+      } else if (r.status === 400) {
+        const campos = corpo.erro?.fieldErrors ?? {};
+        setFilaMsg({ tipo: "erro", texto: campos.telefone?.[0] ?? campos.nome?.[0] ?? "Confira seus dados." });
+      } else {
+        if (corpo.motivo === "HA_HORARIO_LIVRE") await buscarHorarios(servicoId, barbeiroId, data);
+        setFilaMsg({ tipo: "erro", texto: typeof corpo.erro === "string" ? corpo.erro : "Não foi possível entrar na fila." });
+      }
+    } catch {
+      setFilaMsg({ tipo: "erro", texto: "Falha de conexão. Tente novamente." });
+    } finally {
+      setEntrandoFila(false);
+    }
+  }
+
   function recomecar() {
     setServicoId(null);
     setBarbeiroId(null);
@@ -208,6 +241,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
     setConfirmacao(null);
     setForma("NA_BARBEARIA");
     setCopiado(false);
+    setFilaMsg(null);
   }
 
   async function copiarPix(codigo: string) {
@@ -388,7 +422,52 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
               ))}
             </div>
           ) : (
-            <p>Sem horários livres neste dia. Tente outra data ou outro barbeiro.</p>
+            <div className="rounded-xl border border-white/15 p-5">
+              <p className="font-semibold">Sem horários livres neste dia.</p>
+              <p className="mt-1 text-sm text-aco">
+                Tente outra data ou outro barbeiro, ou entre na fila de espera: se alguém cancelar, a barbearia avisa
+                você pelo WhatsApp.
+              </p>
+              {filaMsg?.tipo === "ok" ? (
+                <p role="status" className="mt-4 rounded-lg border border-green-500/40 px-4 py-3 text-green-300">
+                  {filaMsg.texto}
+                </p>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  <input
+                    aria-label="Seu nome (fila de espera)"
+                    placeholder="Seu nome"
+                    autoComplete="name"
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    className={campo}
+                  />
+                  <input
+                    aria-label="Telefone (fila de espera)"
+                    placeholder="(11) 99999-0000"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    className={campo}
+                  />
+                  <button
+                    type="button"
+                    onClick={entrarNaFila}
+                    disabled={entrandoFila || !nome.trim() || !telefone.trim()}
+                    className="brilho w-full rounded-lg bg-poste px-4 py-3 font-semibold text-white disabled:opacity-40"
+                  >
+                    {entrandoFila ? "Entrando…" : "Entrar na fila de espera"}
+                  </button>
+                  {filaMsg?.tipo === "erro" && (
+                    <p role="alert" className="text-red-400">
+                      {filaMsg.texto}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </section>
       )}

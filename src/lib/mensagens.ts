@@ -60,3 +60,11 @@ export function mensagemLembrete(d: DadosLembrete, hoje: string): string {
   const primeiroNome = d.cliente.trim().split(/\s+/)[0];
   return `Oi, ${primeiroNome}! Lembrete do seu horário na ${d.barbearia}: ${d.servico}, ${quando(d.data, hoje)} às ${d.hora}. Até lá!`;
 }
+
+export type DadosVaga = { cliente: string; barbeiro: string; data: string; barbearia: string };
+
+/** Mensagem que o BARBEIRO envia para quem está na fila, quando abre uma vaga. */
+export function mensagemVaga(d: DadosVaga, hoje: string): string {
+  const primeiroNome = d.cliente.trim().split(/\s+/)[0];
+  return `Oi, ${primeiroNome}! Abriu um horário com ${d.barbeiro} ${quando(d.data, hoje)} na ${d.barbearia}. Ainda quer? Responda aqui que a gente reserva para você.`;
+}

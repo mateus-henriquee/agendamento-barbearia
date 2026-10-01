@@ -51,3 +51,12 @@ describe("mensagemLembrete", () => {
     expect(mensagemLembrete({ ...base, data: "2026-10-09" }, "2026-10-05")).toContain("dia 09/10 às 10:00");
   });
 });
+
+describe("mensagemVaga", () => {
+  it("avisa o primeiro nome, o barbeiro e o dia", async () => {
+    const { mensagemVaga } = await import("./mensagens");
+    const m = mensagemVaga({ cliente: "Ana Souza", barbeiro: "João", data: "2026-10-06", barbearia: "Espiral" }, "2026-10-05");
+    expect(m).toContain("Oi, Ana!");
+    expect(m).toContain("com João amanhã na Espiral");
+  });
+});

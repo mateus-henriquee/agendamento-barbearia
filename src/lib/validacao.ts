@@ -68,3 +68,17 @@ export const consultaResumo = z.object({
 export const novoStatus = z.object({
   status: z.enum(["CONCLUIDO", "FALTOU"]),
 });
+
+export const entradaFila = z.object({
+  barbeiroId: id,
+  servicoId: id,
+  data,
+  nome: z.string().trim().min(2, "Informe o nome").max(100),
+  telefone,
+});
+
+export const consultaFila = consultaAgenda;
+
+export const statusFila = z.object({
+  status: z.enum(["AVISADO", "REMOVIDO"]),
+});
