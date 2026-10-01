@@ -40,6 +40,7 @@ export type ResultadoAgendar =
         | "CONFLITO"
         | "FORA_DO_EXPEDIENTE"
         | "SERVICO_NAO_ENCONTRADO"
+        | "SERVICO_NAO_OFERECIDO"
         | "REFERENCIA_INVALIDA";
     };
 
@@ -51,11 +52,14 @@ export type ResultadoAgendar =
 export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgendar> {
   await liberarExpirados(db); // horário de reserva vencida volta a ficar livre
   const servico = await db.query<{ duracao_min: number }>(
-    "SELECT duracao_min FROM servicos WHERE id = $1",
+    "SELECT duracao_min FROM servicos WHERE id = $1 AND ativo",
     [n.servicoId],
   );
   if (servico.rows.length === 0) return { ok: false, motivo: "SERVICO_NAO_ENCONTRADO" };
   const duracao = servico.rows[0].duracao_min;
+  if (!(await barbeiroFazServico(db, n.barbeiroId, n.servicoId))) {
+    return { ok: false, motivo: "SERVICO_NAO_OFERECIDO" };
+  }
 
   try {
     const r = await db.query<{ id: number; preco: number; expira_em: string | null }>(
@@ -92,6 +96,12 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
   }
 }
 
+/** Esse barbeiro faz esse serviço? */
+export async function barbeiroFazServico(db: Db, barbeiroId: number, servicoId: number): Promise<boolean> {
+  const r = await db.query("SELECT 1 FROM barbeiro_servicos WHERE barbeiro_id = $1 AND servico_id = $2", [barbeiroId, servicoId]);
+  return r.rows.length > 0;
+}
+
 /** Cancela um agendamento confirmado. Retorna false se não existir ou já estiver cancelado. */
 export async function cancelar(db: Db, id: number): Promise<boolean> {
   const r = await db.query(
@@ -109,10 +119,11 @@ export async function horariosDisponiveis(
   p: { barbeiroId: number; servicoId: number; data: string; apartirDe?: string },
 ): Promise<string[]> {
   const servico = await db.query<{ duracao_min: number }>(
-    "SELECT duracao_min FROM servicos WHERE id = $1",
+    "SELECT duracao_min FROM servicos WHERE id = $1 AND ativo",
     [p.servicoId],
   );
   if (servico.rows.length === 0) return [];
+  if (!(await barbeiroFazServico(db, p.barbeiroId, p.servicoId))) return [];
   await liberarExpirados(db);
 
   const expediente = await db.query<{ inicio: string; fim: string }>(

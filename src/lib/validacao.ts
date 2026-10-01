@@ -82,3 +82,25 @@ export const consultaFila = consultaAgenda;
 export const statusFila = z.object({
   status: z.enum(["AVISADO", "REMOVIDO"]),
 });
+
+const ids = z.array(id).max(100);
+export const novoBarbeiro = z.object({
+  nome: z.string().trim().min(2, "Informe o nome").max(100),
+  servicoIds: ids,
+  // Se vier, já cria o login do barbeiro.
+  login: z.object({ email: z.string().trim().min(3).max(200), senha: z.string().min(8, "Senha com 8 ou mais caracteres").max(200) }).optional(),
+});
+export const alteraBarbeiro = z.object({
+  nome: z.string().trim().min(2).max(100).optional(),
+  status: z.enum(["ATIVO", "AUSENTE"]).optional(),
+  servicoIds: ids.optional(),
+});
+const duracao = z.number().int().min(5, "Mínimo 5 minutos").max(480, "Máximo 480 minutos");
+const preco = z.number().min(0).max(10000);
+export const novoServico = z.object({ nome: z.string().trim().min(2, "Informe o nome").max(100), duracaoMin: duracao, preco });
+export const alteraServico = z.object({
+  nome: z.string().trim().min(2).max(100).optional(),
+  duracaoMin: duracao.optional(),
+  preco: preco.optional(),
+  ativo: z.boolean().optional(),
+});

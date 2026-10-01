@@ -1,4 +1,4 @@
-import { horariosDisponiveis } from "./agendamentos";
+import { barbeiroFazServico, horariosDisponiveis } from "./agendamentos";
 import { agoraNaBarbearia } from "./agora";
 import type { Db } from "./db";
 
@@ -16,6 +16,7 @@ export type ResultadoEntrar =
  * Só aceita se o dia estiver cheio: havendo horário livre, o cliente deve agendar.
  */
 export async function entrarNaFila(db: Db, e: EntradaFila): Promise<ResultadoEntrar> {
+  if (!(await barbeiroFazServico(db, e.barbeiroId, e.servicoId))) return { ok: false, motivo: "REFERENCIA_INVALIDA" };
   const livres = await horariosDisponiveis(db, { barbeiroId: e.barbeiroId, servicoId: e.servicoId, data: e.data });
   if (livres.length > 0) return { ok: false, motivo: "HA_HORARIO_LIVRE" };
 

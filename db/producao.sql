@@ -3,8 +3,7 @@
 
 -- 1) Barbeiros. A ordem importa: o primeiro é o id 1, o segundo é o id 2...
 INSERT INTO barbeiros (nome) VALUES
-  ('TROQUE: nome do barbeiro 1'),
-  ('TROQUE: nome do barbeiro 2');
+  ('Eduardo');
 
 -- 2) Serviços: nome, duração em minutos e preço em reais.
 INSERT INTO servicos (nome, duracao_min, preco) VALUES

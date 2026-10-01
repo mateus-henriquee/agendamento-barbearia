@@ -18,6 +18,7 @@ beforeAll(async () => {
   await db.exec(readFileSync("db/migrations/002_login_e_preco.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/003_pagamento.sql", "utf8"));
   await db.exec(readFileSync("db/migrations/004_reserva_com_prazo.sql", "utf8"));
+  await db.exec(readFileSync("db/migrations/007_administracao.sql", "utf8"));
 }, 30_000);
 
 afterAll(async () => {
@@ -51,8 +52,17 @@ describe("GET /api/barbeiros", () => {
   it("lista só os ativos", async () => {
     const { barbeiros: lista } = await (await barbeiros()).json();
     expect(lista).toEqual([
-      { id: 1, nome: "João" },
-      { id: 2, nome: "Pedro" },
+      { id: 1, nome: "João", servicoIds: [1, 2] },
+      { id: 2, nome: "Pedro", servicoIds: [1, 2] },
+    ]);
+  });
+
+  it("mostra só os serviços que cada um faz (e ignora serviço desativado)", async () => {
+    await db.exec("DELETE FROM barbeiro_servicos WHERE barbeiro_id = 2 AND servico_id = 1; UPDATE servicos SET ativo = false WHERE id = 2");
+    const { barbeiros: lista } = await (await barbeiros()).json();
+    expect(lista).toEqual([
+      { id: 1, nome: "João", servicoIds: [1] },
+      { id: 2, nome: "Pedro", servicoIds: [] },
     ]);
   });
 });

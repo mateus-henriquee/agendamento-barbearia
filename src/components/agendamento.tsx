@@ -7,7 +7,7 @@ import { linkWhatsApp, mensagemConfirmacao } from "@/lib/mensagens";
 import { site } from "@/lib/site";
 
 type Servico = { id: number; nome: string; duracaoMin: number; preco: number };
-type Barbeiro = { id: number; nome: string };
+type Barbeiro = { id: number; nome: string; servicoIds: number[] };
 type Forma = "PIX" | "NA_BARBEARIA";
 type Confirmacao = {
   cliente: string;
@@ -79,6 +79,8 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
   // Número do último pedido de horários. Respostas atrasadas de pedidos antigos são ignoradas.
   const ultimoPedido = useRef(0);
   const restantes = useSegundosRestantes(confirmacao?.pix?.expiraEm);
+  // Só aparecem os barbeiros que fazem o serviço escolhido.
+  const barbeirosDoServico = servicoId ? barbeiros.filter((b) => b.servicoIds.includes(servicoId)) : barbeiros;
 
   useEffect(() => {
     let cancelado = false;
@@ -130,7 +132,10 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
 
   function escolherServico(id: number) {
     setServicoId(id);
-    buscarHorarios(id, barbeiroId, data);
+    // Se o barbeiro já escolhido não faz esse serviço, limpa a escolha dele.
+    const ainda = barbeiros.find((b) => b.id === barbeiroId)?.servicoIds.includes(id) ? barbeiroId : null;
+    if (ainda === null) setBarbeiroId(null);
+    buscarHorarios(id, ainda, data);
   }
   function escolherBarbeiro(id: number) {
     setBarbeiroId(id);
@@ -373,8 +378,11 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">2. Barbeiro</h2>
+        {barbeirosDoServico.length === 0 && (
+          <p className="text-aco">Nenhum barbeiro disponível para este serviço no momento.</p>
+        )}
         <div className="grid gap-2 sm:grid-cols-2">
-          {barbeiros.map((b) => (
+          {barbeirosDoServico.map((b) => (
             <button
               type="button"
               key={b.id}

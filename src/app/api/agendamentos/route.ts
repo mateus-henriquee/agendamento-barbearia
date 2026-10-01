@@ -10,6 +10,7 @@ const STATUS = {
   CONFLITO: 409,
   FORA_DO_EXPEDIENTE: 422,
   SERVICO_NAO_ENCONTRADO: 404,
+  SERVICO_NAO_OFERECIDO: 422,
   REFERENCIA_INVALIDA: 404,
 } as const;
 
@@ -17,6 +18,7 @@ const MENSAGEM = {
   CONFLITO: "Esse horário já foi reservado",
   FORA_DO_EXPEDIENTE: "Horário fora do expediente ou barbeiro indisponível",
   SERVICO_NAO_ENCONTRADO: "Serviço não encontrado",
+  SERVICO_NAO_OFERECIDO: "Este barbeiro não faz esse serviço",
   REFERENCIA_INVALIDA: "Barbeiro ou cliente não encontrado",
 } as const;
 

@@ -24,7 +24,7 @@ let db: PGlite;
 beforeAll(async () => {
   db = new PGlite({ extensions: { btree_gist } });
   ctx.db = db;
-  for (const m of ["001_inicial", "002_login_e_preco", "003_pagamento", "004_reserva_com_prazo", "006_fila_espera"]) {
+  for (const m of ["001_inicial", "002_login_e_preco", "003_pagamento", "004_reserva_com_prazo", "006_fila_espera", "007_administracao"]) {
     await db.exec(readFileSync(`db/migrations/${m}.sql`, "utf8"));
   }
 }, 30_000);

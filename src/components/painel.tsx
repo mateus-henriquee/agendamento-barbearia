@@ -207,6 +207,11 @@ export default function Painel({ usuario }: Props) {
             <span className="hidden text-aco sm:inline">
               {usuario.nome} · {dono ? "Dono" : "Barbeiro"}
             </span>
+            {dono && (
+              <Link href="/painel/admin" className={botaoNav}>
+                Administração
+              </Link>
+            )}
             <button onClick={sair} className={botaoNav}>
               Sair
             </button>
