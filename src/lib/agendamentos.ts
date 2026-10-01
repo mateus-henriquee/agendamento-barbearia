@@ -40,9 +40,10 @@ export async function agendar(db: Db, n: NovoAgendamento): Promise<ResultadoAgen
   try {
     const r = await db.query<{ id: number }>(
       `INSERT INTO agendamentos
-         (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim)
+        (barbeiro_id, servico_id, cliente_id, data, hora_inicio, hora_fim, preco_cobrado)
        SELECT $1::int, $2::int, $3::int, $4::date, $5::time,
-              $5::time + make_interval(mins => $6::int)
+              $5::time + make_interval(mins => $6::int),
+              (SELECT preco FROM servicos WHERE id = $2::int)
        FROM horarios_funcionamento h
        JOIN barbeiros b ON b.id = h.barbeiro_id
        WHERE h.barbeiro_id = $1::int

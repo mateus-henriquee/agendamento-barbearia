@@ -42,15 +42,17 @@ export default function Home() {
         <section id="sobre" className="bg-grafite py-24">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 md:grid-cols-2">
             <div>
-              <h2 className="titulo text-5xl sm:text-6xl">Sobre nós</h2>
+            <Foto src="/img/sobre.jpg" alt="Interior da barbearia" className="aspect-[5/4] w-full rounded-2xl" />             
+            </div>
+            <div>
+            <h2 className="titulo text-5xl sm:text-6xl">Sobre nós</h2>
               <p className="mt-6 max-w-md text-xl text-aco">
                 Uma barbearia de bairro com agenda de verdade. Cada cliente tem horário marcado, tempo para conversar e saída com o corte que pediu.
               </p>
               <p className="mt-4 max-w-md text-aco">
                 Desde 2015 cuidamos de cabelo e barba, com atendimento masculino e feminino.
               </p>
-            </div>
-            <Foto src="/img/sobre.jpg" alt="Interior da barbearia" className="aspect-[5/4] w-full rounded-2xl" />
+              </div>
           </div>
         </section>
 
@@ -68,7 +70,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="mt-8 inline-block rounded-full border-2 border-white/80 px-6 py-3 font-semibold transition hover:bg-white hover:text-tinta"
               >
-                Abrir no Google Maps
+               📍 Abrir no Google Maps
               </a>
             </div>
             <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-cartao ring-1 ring-white/10">
@@ -88,7 +90,7 @@ export default function Home() {
           <div className="mx-auto max-w-2xl px-5">
             <h2 className="titulo text-5xl sm:text-6xl">Agende seu corte</h2>
             <p className="mb-10 mt-4 text-lg text-aco">Escolha serviço, barbeiro, dia e horário.</p>
-            <div className="rounded-2xl bg-cartao p-6 ring-1 ring-white/10 sm:p-8">
+            <div className="rounded-2xl bg-cartao p-6 ring-1 ring-white/10 sm:p-8 brilho">
               <Agendamento />
             </div>
           </div>
