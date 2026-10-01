@@ -56,6 +56,7 @@ Duas reservas do mesmo barbeiro com horários que se sobrepõem são impossívei
 requisições simultâneas. A aplicação só traduz o erro `23P01` em "horário ocupado" (HTTP 409).
 
 ## Arquitetura
+![Modelagem dos dados](docs/modelagem.png)
 
 ```mermaid
 flowchart LR
