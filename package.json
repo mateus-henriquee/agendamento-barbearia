@@ -12,7 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "migrar": "tsx --env-file=.env scripts/migrar.ts",
     "prova": "tsx --env-file=.env scripts/prova-concorrencia.ts",
-    "expediente": "tsx --env-file=.env scripts/gerar-expediente.ts"
+    "expediente": "tsx --env-file=.env scripts/gerar-expediente.ts",
+    "telefone": "tsx --env-file=.env scripts/definir-telefone.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

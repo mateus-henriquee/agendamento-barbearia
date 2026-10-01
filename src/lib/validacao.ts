@@ -88,7 +88,7 @@ export const novoBarbeiro = z.object({
   nome: z.string().trim().min(2, "Informe o nome").max(100),
   servicoIds: ids,
   // Se vier, já cria o login do barbeiro.
-  login: z.object({ email: z.string().trim().min(3).max(200), senha: z.string().min(8, "Senha com 8 ou mais caracteres").max(200) }).optional(),
+  login: z.object({ email: z.string().trim().min(3).max(200), senha: z.string().min(8, "Senha com 8 ou mais caracteres").max(200), telefone: z.string().trim().max(25).optional() }).optional(),
 });
 export const alteraBarbeiro = z.object({
   nome: z.string().trim().min(2).max(100).optional(),

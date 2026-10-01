@@ -3,6 +3,8 @@ import { z } from "zod";
 import { agendar } from "@/lib/agendamentos";
 import { agoraNaBarbearia } from "@/lib/agora";
 import { getDb } from "@/lib/db";
+import { depoisDaResposta } from "@/lib/depois";
+import { notificarNovoAgendamento } from "@/lib/notificacoes";
 import { gerarPixCopiaECola, pixConfigurado } from "@/lib/pix";
 import { novoAgendamento } from "@/lib/validacao";
 
@@ -47,6 +49,8 @@ export async function POST(req: Request) {
 
   const r = await agendar(getDb(), parsed.data);
   if (r.ok) {
+    // Avisa barbeiro e dono no WhatsApp, sem atrasar nem arriscar a resposta ao cliente.
+    depoisDaResposta(() => notificarNovoAgendamento(getDb(), r.id));
     if (pix && r.preco > 0) {
       const copiaECola = gerarPixCopiaECola({ ...pix, valor: r.preco, txid: `AG${r.id}` });
       return NextResponse.json({ id: r.id, pix: { copiaECola, valor: r.preco, expiraEm: r.expiraEm } }, { status: 201 });

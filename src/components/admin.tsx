@@ -190,15 +190,17 @@ function Barbeiros({ barbeiros, servicos, ocupado, enviar }: { barbeiros: Barbei
   const [escolhidos, setEscolhidos] = useState<number[]>(ativos.map((s) => s.id));
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
 
   async function criar(e: React.FormEvent) {
     e.preventDefault();
-    const login = email.trim() && senha ? { email, senha } : undefined;
+    const login = email.trim() && senha ? { email, senha, telefone: whatsapp.trim() || undefined } : undefined;
     const ok = await enviar("/api/painel/admin/barbeiros", "POST", { nome, servicoIds: escolhidos, login }, "Barbeiro criado, com os horários dos próximos 60 dias.");
     if (ok) {
       setNome("");
       setEmail("");
       setSenha("");
+      setWhatsapp("");
     }
   }
   const alternar = (id: number) => setEscolhidos((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
@@ -262,6 +264,7 @@ function Barbeiros({ barbeiros, servicos, ocupado, enviar }: { barbeiros: Barbei
         <div className="grid gap-3 sm:grid-cols-2">
           <input aria-label="E-mail de login (opcional)" type="email" placeholder="E-mail de login (opcional)" value={email} onChange={(e) => setEmail(e.target.value)} className={campo} />
           <input aria-label="Senha de login (opcional)" type="password" placeholder="Senha, 8 ou mais caracteres" autoComplete="new-password" value={senha} onChange={(e) => setSenha(e.target.value)} className={campo} />
+          <input aria-label="WhatsApp do barbeiro (opcional)" type="tel" placeholder="WhatsApp com DDD (recebe avisos e agenda)" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={`${campo} sm:col-span-2`} />
         </div>
         <button type="submit" disabled={ocupado || nome.trim().length < 2} className={botaoPrimario}>
           Adicionar barbeiro

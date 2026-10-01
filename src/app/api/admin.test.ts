@@ -24,7 +24,7 @@ let db: PGlite;
 beforeAll(async () => {
   db = new PGlite({ extensions: { btree_gist } });
   ctx.db = db;
-  for (const m of ["001_inicial", "002_login_e_preco", "003_pagamento", "004_reserva_com_prazo", "007_administracao"]) {
+  for (const m of ["001_inicial", "002_login_e_preco", "003_pagamento", "004_reserva_com_prazo", "007_administracao", "008_whatsapp"]) {
     await db.exec(readFileSync(`db/migrations/${m}.sql`, "utf8"));
   }
 }, 30_000);
@@ -75,6 +75,19 @@ describe("administração (dono)", () => {
     const corpo = await (await painelAdmin()).json();
     expect(corpo.barbeiros).toEqual([{ id: 1, nome: "João", status: "ATIVO", servicoIds: [1, 2], temLogin: true }]);
     expect(corpo.servicos.map((s: { nome: string }) => s.nome)).toEqual(["Barba", "Corte"]);
+  });
+
+  it("guarda o WhatsApp do barbeiro (normalizado) ao criar o login", async () => {
+    const r = await criarBarbeiro(req("/b", "POST", { nome: "Lucas", servicoIds: [1], login: { email: "lucas@x.com", senha: "senha-forte-3", telefone: "(11) 98888-7777" } }));
+    expect(r.status).toBe(201);
+    expect((await r.json()).whatsapp).toBe("OK");
+    expect((await db.query<{ telefone: string }>("SELECT telefone FROM usuarios WHERE email = 'lucas@x.com'")).rows[0].telefone).toBe("5511988887777");
+  });
+
+  it("WhatsApp inválido: 400 e nada é criado", async () => {
+    const r = await criarBarbeiro(req("/b", "POST", { nome: "Lucas", servicoIds: [1], login: { email: "lucas@x.com", senha: "senha-forte-3", telefone: "123" } }));
+    expect(r.status).toBe(400);
+    expect(Number((await db.query<{ n: string }>("SELECT count(*) AS n FROM barbeiros")).rows[0].n)).toBe(1);
   });
 
   it("cria barbeiro com serviços, expediente e login", async () => {
