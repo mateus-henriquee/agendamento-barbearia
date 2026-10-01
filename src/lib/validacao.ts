@@ -45,3 +45,8 @@ export const novoCliente = z.object({
   nome: z.string().trim().min(2, "Informe o nome").max(100),
   telefone,
 });
+
+export const credenciais = z.object({
+  email: z.string().trim().min(3).max(200),
+  senha: z.string().min(1).max(200),
+});
