@@ -18,6 +18,7 @@ export function getDb(): Db {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL não está definida. Crie o arquivo .env");
   }
-  pool ??= new Pool({ connectionString: process.env.DATABASE_URL });
+  // max baixo: em hospedagem serverless cada instância abre o seu pool.
+  pool ??= new Pool({ connectionString: process.env.DATABASE_URL, max: 5 });
   return pool;
 }
