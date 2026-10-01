@@ -11,7 +11,8 @@
     "usuario": "tsx --env-file=.env scripts/criar-usuario.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "migrar": "tsx --env-file=.env scripts/migrar.ts",
-    "prova": "tsx --env-file=.env scripts/prova-concorrencia.ts"
+    "prova": "tsx --env-file=.env scripts/prova-concorrencia.ts",
+    "expediente": "tsx --env-file=.env scripts/gerar-expediente.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

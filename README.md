@@ -56,7 +56,6 @@ Duas reservas do mesmo barbeiro com horários que se sobrepõem são impossívei
 requisições simultâneas. A aplicação só traduz o erro `23P01` em "horário ocupado" (HTTP 409).
 
 ## Arquitetura
-![Modelagem dos dados](docs/modelagem.png)
 
 ```mermaid
 flowchart LR
@@ -139,6 +138,7 @@ Variáveis (`.env.example`): `DATABASE_URL`, `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDAD
 | `npm test` | testes (lógica, banco e rotas) |
 | `npm run lint` · `npm run typecheck` | qualidade e tipos |
 | `npm run migrar` | aplica as migrações que faltam |
+| `npm run expediente` | cria os horários de funcionamento dos próximos dias |
 | `npm run prova` | prova de concorrência contra o banco do `.env` |
 | `npm run usuario -- "Nome" email senha DONO\|BARBEIRO [barbeiroId]` | cria login |
 
@@ -160,14 +160,19 @@ Variáveis (`.env.example`): `DATABASE_URL`, `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDAD
 
 ## Deploy (Vercel + Neon, planos gratuitos)
 
-1. **Banco:** crie um projeto no [Neon](https://neon.tech) e copie a URL de conexão (com `?sslmode=require`).
-2. **Migrações:** na sua máquina, `DATABASE_URL="<url do neon>" npx tsx scripts/migrar.ts`.
-3. **Dados reais:** cadastre barbeiros, serviços e horários de funcionamento no banco (o `db/seed.sql`
-   tem dados fictícios, não use em produção). Crie o primeiro login com `npm run usuario`
-   apontando para a URL do Neon.
-4. **Site:** importe o repositório na [Vercel](https://vercel.com) e defina as variáveis
-   `DATABASE_URL`, `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDADE`.
-5. Cada `git push` na `main` roda o CI e publica de novo.
+1. **Banco:** crie um projeto no [Neon](https://neon.tech). Ele mostra duas URLs de conexão:
+   a **direta** (para migrações e scripts) e a **pooled**, com `-pooler` no endereço (para o site).
+2. **Migrações**, na sua máquina, com a URL **direta**:
+   `DATABASE_URL="<url direta>" npx tsx scripts/migrar.ts`
+3. **Dados reais:** edite `db/producao.sql` (barbeiros e serviços) e rode no editor SQL do Neon.
+   O `db/seed.sql` tem dados fictícios e apaga tudo: não use em produção.
+4. **Expediente:** `DATABASE_URL="<url direta>" npx tsx scripts/gerar-expediente.ts`
+   cria os horários dos próximos 60 dias (segunda a sábado, 09:00 às 18:00; veja as opções no arquivo).
+   Rode de novo de tempos em tempos: só cria os dias que faltam.
+5. **Login do dono:** `DATABASE_URL="<url direta>" npx tsx scripts/criar-usuario.ts "Nome" email senha DONO`
+6. **Site:** importe o repositório na [Vercel](https://vercel.com) e defina as variáveis
+   `DATABASE_URL` (a URL **pooled**), `PIX_CHAVE`, `PIX_NOME`, `PIX_CIDADE`.
+7. Cada `git push` na `main` roda o CI e publica de novo.
 
 ## Limites conhecidos
 
