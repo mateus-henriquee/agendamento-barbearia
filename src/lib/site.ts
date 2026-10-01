@@ -1,10 +1,10 @@
 export const site = {
   nome: "Barbearia",
   endereco: "Rua Augusta, 1200 — Consolação, São Paulo - SP",
-  telefone: "(11) 99999-0000",
+  telefone: "(11) 95340-1384",
   instagram: "@barbearia",
   horario: "Segunda a sábado, das 9h às 18h",
-  whatsapp: "5511999990000", // só números: 55 + DDD + número
+  whatsapp: "5511953401384", // só números: 55 + DDD + número
   redes: {
   instagram: "https://instagram.com",
   facebook: "https://facebook.com",
