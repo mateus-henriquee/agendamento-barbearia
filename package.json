@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "usuario": "tsx --env-file=.env scripts/criar-usuario.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "migrar": "tsx --env-file=.env scripts/migrar.ts",
     "prova": "tsx --env-file=.env scripts/prova-concorrencia.ts"
   },
