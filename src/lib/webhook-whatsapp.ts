@@ -36,6 +36,7 @@ export async function processarWebhook(
     const novo = await db.query("INSERT INTO whatsapp_recebidas (wamid) VALUES ($1) ON CONFLICT DO NOTHING RETURNING wamid", [msg.id]);
     if (novo.rows.length === 0) {
       resumo.ignoradas++;
+      console.log(`[whatsapp] mensagem repetida ignorada (${msg.id.slice(-6)})`);
       continue;
     }
     try {
@@ -43,6 +44,9 @@ export async function processarWebhook(
       const usuario = telefone ? await usuarioPorTelefone(db, telefone) : null;
       if (!usuario) {
         resumo.ignoradas++;
+        // Mostra só o final do número, para diagnosticar sem expor o telefone inteiro nos logs.
+        console.log(`[whatsapp] número não cadastrado ou inativo: final ${msg.de.slice(-4)} (normalizado: ${telefone ? `final ${telefone.slice(-4)}, ${telefone.length} dígitos` : "inválido"})`);
+        await db.query("DELETE FROM whatsapp_recebidas WHERE wamid = $1", [msg.id]);
         continue;
       }
       const respostas = await responder(db, usuario, { texto: msg.texto, escolha: msg.escolha }, hoje);
@@ -51,6 +55,7 @@ export async function processarWebhook(
         if (!r.ok) throw new Error(`envio falhou (status ${r.status}): ${r.erro}`);
       }
       resumo.respondidas++;
+      console.log(`[whatsapp] respondido a ${usuario.papel} (${respostas.length} mensagem(ns))`);
     } catch (erro) {
       // Libera o id para a Meta poder tentar de novo.
       await db.query("DELETE FROM whatsapp_recebidas WHERE wamid = $1", [msg.id]);
