@@ -16,7 +16,7 @@ type Confirmacao = {
   data: string;
   hora: string;
   formaPagamento: Forma;
-  pix?: { copiaECola: string; valor: number; expiraEm: string | null };
+  pix?: { copiaECola: string; valor: number; expiraEm: string | null; automatico?: boolean; consulta?: string };
 };
 
 const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -79,6 +79,35 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
   // Número do último pedido de horários. Respostas atrasadas de pedidos antigos são ignoradas.
   const ultimoPedido = useRef(0);
   const restantes = useSegundosRestantes(confirmacao?.pix?.expiraEm);
+  const [pagoConfirmado, setPagoConfirmado] = useState(false);
+
+  // Pix automático: pergunta ao servidor se o pagamento já caiu. Continua um pouco depois do prazo da reserva,
+  // porque o Mercado Pago ainda aceita o Pix por mais alguns minutos.
+  const consulta = confirmacao?.pix?.consulta;
+  const expiraEmPix = confirmacao?.pix?.expiraEm;
+  useEffect(() => {
+    if (!consulta) return;
+    const limite = (expiraEmPix ? new Date(expiraEmPix).getTime() : Date.now()) + 11 * 60_000;
+    let ativo = true;
+    const id = setInterval(async () => {
+      if (Date.now() > limite) return clearInterval(id);
+      try {
+        const r = await fetch(`/api/pagamentos/${consulta}`, { cache: "no-store" });
+        if (!r.ok || !ativo) return;
+        const status = await r.json();
+        if (status.pago) {
+          setPagoConfirmado(true);
+          clearInterval(id);
+        }
+      } catch {
+        // sem rede por um instante: tenta de novo no próximo ciclo
+      }
+    }, 4000);
+    return () => {
+      ativo = false;
+      clearInterval(id);
+    };
+  }, [consulta, expiraEmPix]);
   // Só aparecem os barbeiros que fazem o serviço escolhido.
   const barbeirosDoServico = servicoId ? barbeiros.filter((b) => b.servicoIds.includes(servicoId)) : barbeiros;
 
@@ -247,6 +276,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
     setForma("NA_BARBEARIA");
     setCopiado(false);
     setFilaMsg(null);
+    setPagoConfirmado(false);
   }
 
   async function copiarPix(codigo: string) {
@@ -261,7 +291,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
 
   if (confirmacao) {
     const c = confirmacao;
-    const expirou = restantes === 0;
+    const expirou = restantes === 0 && !pagoConfirmado;
     const zap = linkWhatsApp(
       site.whatsapp,
       mensagemConfirmacao({
@@ -276,7 +306,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
     return (
       <section aria-live="polite">
         <h2 className="titulo text-3xl">
-          {expirou ? "Reserva expirada" : c.pix ? "Horário reservado" : "Agendamento confirmado ✓"}
+          {pagoConfirmado ? "Pagamento confirmado ✓" : expirou ? "Reserva expirada" : c.pix ? "Horário reservado" : "Agendamento confirmado ✓"}
         </h2>
         <dl className="mt-4 space-y-1">
           <div><dt className="inline opacity-70">Serviço: </dt><dd className="inline">{c.servico}</dd></div>
@@ -285,7 +315,7 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
           <div><dt className="inline opacity-70">Horário: </dt><dd className="inline">{c.hora}</dd></div>
           <div>
             <dt className="inline opacity-70">Pagamento: </dt>
-            <dd className="inline">{c.pix ? "Pix (aguardando pagamento)" : "após o corte"}</dd>
+            <dd className="inline">{pagoConfirmado ? "Pix (pago ✓)" : c.pix ? "Pix (aguardando pagamento)" : "após o corte"}</dd>
           </div>
         </dl>
 
@@ -295,7 +325,13 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
           </p>
         )}
 
-        {c.pix && !expirou && (
+        {c.pix && pagoConfirmado && (
+          <p role="status" className="mt-6 rounded-lg border border-green-500 px-4 py-3 text-green-300">
+            Recebemos o seu Pix. Seu horário está confirmado. Até lá!
+          </p>
+        )}
+
+        {c.pix && !expirou && !pagoConfirmado && (
           <div className="mt-6 rounded-xl border border-white/15 p-5">
             <p className="font-semibold">Pague {moeda.format(c.pix.valor)} com Pix</p>
             {restantes !== null && (
@@ -323,7 +359,9 @@ export default function Agendamento({ pixDisponivel }: { pixDisponivel: boolean 
               {copiado ? "Copiado ✓" : "Copiar código Pix"}
             </button>
             <p className="mt-3 text-sm text-aco">
-              O agendamento é confirmado quando o barbeiro receber o Pix. Sem pagamento no prazo, o horário é liberado.
+              {c.pix.automatico
+                ? "Assim que o pagamento cair, esta tela confirma sozinha. Sem pagamento no prazo, o horário é liberado."
+                : "O agendamento é confirmado quando o barbeiro receber o Pix. Sem pagamento no prazo, o horário é liberado."}
             </p>
           </div>
         )}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { agoraNaBarbearia } from "@/lib/agora";
+import { Devolucoes } from "@/components/devolucoes";
 import type { ItemFila } from "@/lib/fila";
 import { linkWhatsApp, mensagemLembrete, mensagemVaga } from "@/lib/mensagens";
 import type { ItemAgenda, ResumoMes } from "@/lib/painel";
@@ -220,6 +221,7 @@ export default function Painel({ usuario }: Props) {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-10">
+        {dono && <Devolucoes />}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="titulo text-4xl sm:text-5xl">Agenda do dia</h1>
